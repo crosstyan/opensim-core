@@ -139,9 +139,12 @@ macro(OpenSimAddPythonModule)
 
     add_library(${_libname} SHARED ${_output_cxx_file} ${_output_header_file})
 
-    target_include_directories(${_libname} PRIVATE
-            "${Python3_INCLUDE_DIRS}"
-            "${Python3_NumPy_INCLUDE_DIRS}")
+    # NumPy include must come BEFORE Python3_INCLUDE_DIRS to ensure NumPy 2.x
+    # headers take precedence over any stale NumPy 1.x headers installed under
+    # /usr/include/python3.10/numpy/ (which hardcode the old numpy.core ABI path).
+    target_include_directories(${_libname} BEFORE PRIVATE
+            "${Python3_NumPy_INCLUDE_DIRS}"
+            "${Python3_INCLUDE_DIRS}")
     
     # On macOS, the python interpreter might link to the python library 
     # statically, in which case we do not want to link dynamically to the
